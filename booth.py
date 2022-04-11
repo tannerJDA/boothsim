@@ -59,59 +59,60 @@ def booth(multiplicand, multiplier):
 # Function to perform modified Booth's algorithm
 # Accepts as input a multiplicand and multiplier
 # Returns the product of the two numbers
+
 def modified_booth(multiplicand, multiplier):
-    # Initilizations
-    twos = twos_comp(multiplier)  # get the two's compliment of the multiplier
-    padded = multiplicand + "0"       # pad the muliplier to get recode results
-    orglen = len(multiplicand)        # get the original length for filling
+    twos = twos_comp(multiplicand)  # get the two's compliment of the multiplier
+    padded = multiplier + "0"       # pad the muliplier to get recode results
+    orglen = len(multiplicand)      # get the original length for filling
     maxlen = orglen * 2             # get max length for filling
     recode = []                     # empty list for recode results and dictionary for finding values
     recode_vals = {"001":1, "010":1, "011":2, "100":-2, "101":-1, "110":-1}
     result = 0                      # final result is currently 0
 
-    start_time = time.time()
     # find the recode results for each set of 3 bits
-    for i in range(0, len(padded), 2):
-        if padded[i:i+3] in recode_vals:
-            recode.insert(0, recode_vals.get(padded[i:i+3]))
-    
-    temp = ""
+    for b in range(0, len(padded), 2):
+        if padded[b-2:b+1] in recode_vals: recode.insert(0, recode_vals.get(padded[b-2:b+1]))
+        else: recode.insert(0, "0")
+
+    # format printing
+    temp = " "
     for c in range(len(recode)-1, -1, -1):
         temp += " " + str(recode[c])
     print(f"  Bit Recoding: {recode}\n    {multiplicand}\n  x{temp}\n--------------------------")
 
-    # perform the calculations using the recode results
+    # perform the multiplications using the recode results
     for c in range(len(recode)):
         # pad the end for each iteration
         if c > 0: 
             twos += "00"
-            multiplier += "00"
+            multiplicand += "00"
             orglen += 2
-
-        # perform the calcualtions
-        if recode[c] == 1: recode[c] = bin(int(multiplier, 2))[2:].zfill(orglen)
-        if recode[c] == 2: recode[c] = bin((2 * int(multiplier, 2)))[2:].zfill(orglen)
-        if recode[c] == -2: recode[c] = bin((2 * int(twos, 2)))[2:].zfill(orglen)
+        
+        # perform the multiplications
+        if recode[c] == 1: recode[c] = bin(int(multiplicand, 2))[2:].zfill(orglen)
+        if recode[c] == 2: recode[c] = bin((int(multiplicand + "0", 2)))[2:].zfill(orglen+1)
+        if recode[c] == -2: recode[c] = bin((int(twos + "0", 2)))[2:].zfill(orglen+1)
         if recode[c] == -1: recode[c] = bin(int(twos, 2))[2:].zfill(orglen)
 
-        # pad the beginning of each calcualtion
+        # pad the beginning of each multiplication
         recode[c] = recode[c].rjust(maxlen, recode[c][0])
 
-        # add to results
-        result += int(recode[c], 2)
-
+    # add all the multiplications together and format printing
     for r in range(len(recode)-1):
         print(f"    {recode[r]}")
+        result += int(recode[r], 2)
     print(f"  + {recode[len(recode)-1]}\n--------------------------")
-    
+    result += int(recode[len(recode)-1], 2)
+
+    # format printting
     if len(bin(result)[2:]) > maxlen:
         result = bin(result)[len(bin(result)[2:])-maxlen+2:]
-        print(f" Answer: {bin(int(result, 2))[2:].zfill(maxlen)}")
+        print(f"    {bin(int(result, 2))[2:].zfill(maxlen)}\n Answer: {bin(int(result, 2))[2:].zfill(maxlen)}")
         return bin(int(result, 2))[2:].zfill(maxlen)
 
     result = bin(result)
     end_time = time.time()
-    print(f" Answer: {bin(int(result, 2))[2:].zfill(maxlen)}")
+    print(f"    {bin(int(result, 2))[2:].zfill(maxlen)}\n Answer: {bin(int(result, 2))[2:].zfill(maxlen)}")
     return bin(int(result, 2))[2:].zfill(maxlen)
 
 
